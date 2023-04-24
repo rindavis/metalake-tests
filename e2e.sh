@@ -12,7 +12,7 @@ function usage {
     echo "  -d      dgc url"
     echo "  -u      username for DGC login (read/write)"
     echo "  -p      password for DGC login (read/write)"
-    echo "  -g 		additional global variable(s)"
+    echo "  -g      additional global variable(s)"
     echo "  -s      test stage"
     echo "            provider - run basic 'providers' tests, including mappings"
     echo "            asset - run basic 'assets' tests, including search"
@@ -24,6 +24,8 @@ function usage {
 }
 
 [ -z $1 ] && { usage; }
+
+# PARSE OPTIONS
 
 while getopts "h:u:p:s:d:g:" option; do
     case $option in
@@ -44,6 +46,8 @@ while getopts "h:u:p:s:d:g:" option; do
            exit;;
     esac
 done
+
+# CHECK FOR REQUIRED FIELDS
 
 if [ -z $url ]; then
   echo "[ERROR] Metadata Lake url was not specified with '-h'. Please specify url to proceed."
@@ -69,6 +73,8 @@ if [ -z $stage ]; then
   echo "[ERROR] Stage was not specified with '-s'. Please specify stage to proceed."
   exit 1
 fi
+
+# COLLECT ALL INPUT GLOBAL VARIABLES
 
 postman_globals+=("--global-var rw_username=${username}")
 postman_globals+=("--global-var rw_password=${password}")
@@ -104,6 +110,8 @@ function edge_ingest {
   correlation_id=$(uuidgen | tr '[:upper:]' '[:lower:]')
   echo "[WARN] 'edge-ingest' test stage is not yet supported." || exit 6
 }
+
+# RUN TESTS
 
 if [ ${stage} == "provider" ]; then
   provider

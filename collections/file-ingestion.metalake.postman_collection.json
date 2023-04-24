@@ -1,0 +1,529 @@
+{
+	"info": {
+		"_postman_id": "de26369f-670c-4fac-8b0a-e13ad3ebada6",
+		"name": "file-ingestion.metalake",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26935642"
+	},
+	"item": [
+		{
+			"name": "Log in",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Logging in should generate token and cookie\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    pm.expect(responseBody).not.null;",
+							"",
+							"    var token = responseBody.csrfToken;",
+							"    pm.expect(token).not.null;",
+							"    pm.globals.set(\"csrf_token\", token);",
+							"    var cookie = pm.cookies.get('JSESSIONID');",
+							"    pm.expect(cookie).not.null;",
+							"    pm.globals.set(\"auth_cookie\", cookie);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{rw_password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{rw_username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"{{rw_username}}\",\n  \"password\": \"{{rw_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dgc_url}}/rest/2.0/auth/sessions",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"2.0",
+						"auth",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create provider",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Provider sould be successfully created\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(201);",
+							"    var id = pm.response.json().id",
+							"    console.log(\"Provider was created with id \" + id);",
+							"    pm.globals.set(\"file_ingest_provider_id\", id);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"postman-file-ingest-provider\",\n  \"description\": \"Provider for postman file ingest collection\",\n  \"ownerName\": \"postman\",\n  \"isEdge\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get provider by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting created provider 'postman-file-ingest-provider' by id should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var name = pm.response.json().name;",
+							"    pm.expect(name).to.eq(\"postman-file-ingest-provider\");",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers/{{file_ingest_provider_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers",
+						"{{file_ingest_provider_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Start file ingestion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Starting file ingestion should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(202);",
+							"    var responseBody = pm.response.json();",
+							"    var jobId = responseBody.id;",
+							"    console.log(\"File ingestion id is \" + jobId);",
+							"    pm.globals.set(\"file_ingest_id\", jobId);",
+							"    pm.globals.set(\"file_ingest_poll_count\", 0);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"source\": {\n    \"path\": \"dgc-sr-test/\",\n    \"region\": \"eu-west-1\",\n    \"accessId\": \"{{aws_id}}\",\n    \"secret\": \"{{aws_secret}}\",\n    \"filePattern\": \"big.json\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers/{{file_ingest_provider_id}}/files/ingest",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers",
+						"{{file_ingest_provider_id}}",
+						"files",
+						"ingest"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Poll file ingestion status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Poll state of file ingestion job\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    var state = responseBody.state;",
+							"    var jobId = pm.globals.get(\"file_ingest_id\");",
+							"",
+							"    var i = pm.globals.get(\"file_ingest_poll_count\");",
+							"    if (i <= 30) { // 10 sec x 30 = 5 mins",
+							"        if (state == \"COMPLETED\") {",
+							"            console.log(\"Job '\" + jobId + \"' completed successfully.\");",
+							"            pm.globals.set(\"file_ingest_poll_count\", 0);",
+							"        } else if (state == \"RUNNING\" || state == \"PENDING\") {",
+							"            console.log(\"Job '\" + jobId + \"' is in active '\" + state + \"' state.\");",
+							"            setTimeout(() => {}, 10000); // wait for 10 seconds",
+							"            pm.globals.set(\"file_ingest_poll_count\", i++);",
+							"            postman.setNextRequest(pm.info.requestId);",
+							"            return;",
+							"        } else {",
+							"            pm.expect.fail(\"Job '\" + jobId + \"' reached fail state '\" + state + \"'\");",
+							"        }",
+							"    } else {",
+							"        pm.expect.fail(\"Job '\" + jobId + \"' did not reach 'COMPLETED' state in time. Current state is '\" + state + \"'\");",
+							"    }",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/v1/jobs/{{file_ingest_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"jobs",
+						"{{file_ingest_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete provider",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Deleting provider should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(204);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers/{{file_ingest_provider_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers",
+						"{{file_ingest_provider_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get provider by id after",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Confirm provider was deleted\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(404);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers/{{file_ingest_provider_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers",
+						"{{file_ingest_provider_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

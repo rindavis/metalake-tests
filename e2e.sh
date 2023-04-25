@@ -8,18 +8,21 @@ fi
 function usage {
     echo "Run end-to-end tests for Metadata Lake via Postman."
     echo "usage: ./e2e.sh -h <url> -d <dgc url> -u <username> -p <password> -s <stage> [-g <global-variable>=<value>]"
-    echo "  -h      instance url"
-    echo "  -d      dgc url"
-    echo "  -u      username for DGC login (read/write)"
-    echo "  -p      password for DGC login (read/write)"
-    echo "  -g      additional global variable(s)"
-    echo "  -s      test stage"
-    echo "            provider - run basic 'providers' tests, including mappings"
-    echo "            asset - run basic 'assets' tests, including search"
-    echo "            file-ingest - run file ingestion"
-    echo "            push-ingest - run asset ingestion and relation ingestion"
-    echo "            edge-ingest - run edge ingestion using a specified edge site"
-    echo "            all - run all above stages consecutively"
+    echo "  -h    instance url"
+    echo "  -d    dgc url"
+    echo "  -u    username for DGC login (read/write)"
+    echo "  -p    password for DGC login (read/write)"
+    echo "  -g    additional global variable(s)"
+    echo "  -s    test stage"
+    echo "            provider       run basic 'providers' tests, including mappings"
+    echo "            asset          run basic 'assets' tests, including search"
+    echo "            file-ingest    run file ingestion"
+    echo "                           please provide -g aws_id=<aws id> -g aws_secret=<aws key>"
+    echo "            push-ingest    run asset ingestion and relation ingestion"
+    echo "            edge-ingest    run edge ingestion using a specified edge site"
+    echo "                           please provide -g schema_conn_id=<schema connection id> -g must_cancel=<true if job must be cancelled to complete>"
+    echo "            promote        run promotion for a provider"
+    echo "            all            run all above stages consecutively"
     exit 1
 }
 
@@ -84,13 +87,17 @@ for key_val in "${globals[@]}"; do
   postman_globals+=("--global-var $key_val")
 done
 
+# TODO: RDD - add more checks for mappings, types,
 function provider {
-  echo "[WARN] 'provider' test stage is not yet supported." || exit 2
+  echo "[INFO] Starting provider tests."
+  newman run collections/provider.metalake.postman_collection.json ${postman_globals[@]} \
+  --verbose --reporters cli,json --reporter-json-export reports/provider.json || exit 2
+  echo "[INFO] Completed provider tests."
 }
 
+# TODO: RDD - add asset test collection
 function asset {
   echo "[WARN] 'asset' test stage is not yet supported." || exit 3
-
 }
 
 # TODO: RDD - parameterize test bucket info (?)
@@ -102,13 +109,22 @@ function file_ingest {
   echo "[INFO] Completed file ingestion tests."
 }
 
+# TODO: RDD - add push test collection
 function push_ingest {
   echo "[WARN] 'push-ingest' test stage is not yet supported." || exit 5
 }
 
 function edge_ingest {
   correlation_id=$(uuidgen | tr '[:upper:]' '[:lower:]')
-  echo "[WARN] 'edge-ingest' test stage is not yet supported." || exit 6
+  echo "[INFO] Starting edge ingestion tests with correlation id '${correlation_id}'."
+  newman run collections/edge-ingestion.metalake.postman_collection.json --global-var "edge_ingest_corr_id=${correlation_id}" ${postman_globals[@]} \
+  --verbose --reporters cli,json --reporter-json-export reports/edge-ingest.json || exit 6
+  echo "[INFO] Completed edge ingestion tests."
+}
+
+# TODO: RDD - add promote test collection
+function promote {
+  echo "[WARN] 'promote' test stage is not yet supported." || exit 7
 }
 
 # RUN TESTS
@@ -123,10 +139,13 @@ elif [ ${stage} == "push-ingest" ]; then
   push_ingest
 elif [ ${stage} == "edge-ingest" ]; then
   edge_ingest
+elif [ ${stage} == "promote" ]; then
+  promote
 elif [ ${stage} == "all" ]; then
   provider
   asset
   file_ingest
   push_ingest
   edge_ingest
+  promote
 fi

@@ -1,0 +1,522 @@
+{
+	"info": {
+		"_postman_id": "29fda883-877c-4707-82cf-afe20fa3014d",
+		"name": "provider.metalake",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26935642"
+	},
+	"item": [
+		{
+			"name": "Log in",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Logging in should generate token and cookie\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    pm.expect(responseBody).not.null;",
+							"",
+							"    var token = responseBody.csrfToken;",
+							"    pm.expect(token).not.null;",
+							"    pm.globals.set(\"csrf_token\", token);",
+							"    var cookie = pm.cookies.get('JSESSIONID');",
+							"    pm.expect(cookie).not.null;",
+							"    pm.globals.set(\"auth_cookie\", cookie);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{rw_password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{rw_username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"{{rw_username}}\",\n  \"password\": \"{{rw_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dgc_url}}/rest/2.0/auth/sessions",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"2.0",
+						"auth",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get providers initial",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Get initial count of providers\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var total = pm.response.json().total",
+							"    console.log(\"Total number of providers before create was \" + total);",
+							"    pm.globals.set(\"init_provider_count\", total);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create provider",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Provider sould be successfully created\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(201);",
+							"    var id = pm.response.json().id",
+							"    console.log(\"Provider was created with id \" + id);",
+							"    pm.globals.set(\"provider_id\", id);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"postman-provider\",\n  \"description\": \"Provider created for postman end-to-end\",\n  \"ownerName\": \"postman\",\n  \"isEdge\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get providers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Count of providers should have increased\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var total = pm.response.json().total",
+							"    console.log(\"Total is now \" + total);",
+							"    var initTotal = pm.globals.get(\"init_provider_count\");",
+							"    pm.expect(total).to.eq(parseInt(initTotal) + 1);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get provider by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting created provider 'postman-provider' should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var name = pm.response.json().name;",
+							"    pm.expect(name).to.eq(\"postman-provider\");",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers/{{provider_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers",
+						"{{provider_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete provider",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Deleting provider should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(204);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers/{{provider_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers",
+						"{{provider_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get provider by id after",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Confirm provider was deleted\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(404);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/providers/{{provider_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"providers",
+						"{{provider_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

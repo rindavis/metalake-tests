@@ -22,7 +22,7 @@ pm.test("Test that OK response is returned", function () {
 });
 ```
 
-Note the first and last `setNextRequest` calls which should **always** be included for happy path tests. The current version of Postman will continue a collection even if a call fails rather than bailing. This is usually a problem for integration tests since they depend on one another. For instance, if one call creates a provider and the next deletes it, the first call failing would negatively impact the next - and any remaining - call. Using these methods ensures that execution stops once any call fails.
+Note the first and last `setNextRequest` calls which should **always** be included for happy path tests. The current version of Postman will continue a collection even if a call fails rather than bailing. This is usually a problem for integration tests since they depend on one another. For instance, if one call creates a provider and the next deletes it, the first call failing would negatively impact the next - and any remaining - call. Using these methods ensures that execution stops once any call fails. You can also skip some requests altogether by explicitly specifying the next step using the request name (e.g. `postman.setNextRequest("Delete provider");`)
 
 #### Frequently used
 
@@ -30,6 +30,9 @@ There are many different types of assertions and utilities you can use, but a fe
 
 ##### Simple equality check
 `pm.expect(id).to.eq(2)`
+
+##### Equality check for multiple alternatives
+`pm.expect(state).to.be.oneOf(["ONE", "TWO"]);`
 
 ##### Getting field from response object
 `pm.response.json().field`

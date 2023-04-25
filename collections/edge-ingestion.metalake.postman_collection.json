@@ -1,0 +1,760 @@
+{
+	"info": {
+		"_postman_id": "5774eb71-9851-49a4-a854-eefa8530aea4",
+		"name": "edge-ingestion.metalake",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26935642"
+	},
+	"item": [
+		{
+			"name": "Log in",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Logging in should generate token and cookie\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    pm.expect(responseBody).not.null;",
+							"",
+							"    var token = responseBody.csrfToken;",
+							"    pm.expect(token).not.null;",
+							"    pm.globals.set(\"csrf_token\", token);",
+							"    var cookie = pm.cookies.get('JSESSIONID');",
+							"    pm.expect(cookie).not.null;",
+							"    pm.globals.set(\"auth_cookie\", cookie);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{rw_password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{rw_username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"{{rw_username}}\",\n  \"password\": \"{{rw_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dgc_url}}/rest/2.0/auth/sessions",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"2.0",
+						"auth",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get schema connection by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting schema connection by id should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{dgc_url}}/rest/catalogDatabase/v1/schemaConnections/{{schema_conn_id}}",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"catalogDatabase",
+						"v1",
+						"schemaConnections",
+						"{{schema_conn_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get initial list of jobs",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting initial list of jobs should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    console.log(\"Initial total of jobs is \" + responseBody.total);",
+							"    pm.globals.set(\"init_job_count\", responseBody.total);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/v1/jobs",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"jobs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Start edge ingestion job",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Starting edge ingestion job should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(201);",
+							"    var jobId = pm.response.text().replaceAll('\"', '');",
+							"    console.log(\"Job was started with id \" + jobId);",
+							"    pm.globals.set(\"edge_ingest_job_id\", jobId);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"jobId\": \"\",\n  \"context\": {\n    \"schemaConnectionId\": \"{{schema_conn_id}}\",\n    \"correlationId\": \"{{edge_ingest_corr_id}}\"\n  },\n  \"provider\": \"Metadata Lake\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/schemaIngestionJobs/start",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"schemaIngestionJobs",
+						"start"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Confirm job count updated",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Confirm job count increased by 1\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    var initJobCount = pm.globals.get(\"init_job_count\");",
+							"    pm.expect(responseBody.total).to.eq(parseInt(initJobCount) + 1);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/v1/jobs",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"jobs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get job by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting job by id should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/v1/jobs/{{edge_ingest_job_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"jobs",
+						"{{edge_ingest_job_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pages for job",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Submitting page should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(202);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"context\": {\n    \"schemaConnectionId\": \"{{schema_conn_id}}\",\n    \"correlationId\": \"{{edge_ingest_corr_id}}\"\n  },\n  \"currentPage\": 1,\n  \"pagesCount\": 1,\n  \"ingestedSchema\": {\n    \"name\": \"string\",\n    \"tables\": [\n      {\n        \"name\": \"table\",\n        \"targetDomainId\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n        \"description\": \"string\",\n        \"tableType\": \"string\",\n        \"columns\": [\n          {\n            \"name\": \"column\",\n            \"position\": 0,\n            \"technicalDataType\": \"string\",\n            \"defaultValue\": \"string\",\n            \"description\": \"string\",\n            \"nullable\": true,\n            \"autoIncremented\": true,\n            \"generatedColumn\": true,\n            \"numberOfDecimalDigits\": 0,\n            \"charOctetLength\": 0,\n            \"columnSize\": 0,\n            \"primaryKey\": true,\n            \"primaryKeyName\": \"string\"\n          }\n        ]\n      }\n    ],\n    \"foreignKeys\": [\n      {\n        \"name\": \"string\",\n        \"updateRule\": 0,\n        \"deleteRule\": 0,\n        \"deferrability\": 0,\n        \"sequence\": [\n          {\n            \"keySequence\": 0,\n            \"primaryKeyTableName\": \"string\",\n            \"primaryKeyColumnName\": \"string\",\n            \"foreignKeyTableName\": \"string\",\n            \"foreignKeyColumnName\": \"string\"\n          }\n        ]\n      }\n    ],\n    \"errorMessages\": [\n      [\n        \"string\"\n      ]\n    ]\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/schemaIngestionJobs/{{edge_ingest_job_id}}/pages",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"schemaIngestionJobs",
+						"{{edge_ingest_job_id}}",
+						"pages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Finalize job",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Finalizing job should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(202);",
+							"",
+							"    var cancel = pm.globals.get(\"must_cancel\");",
+							"    if (cancel == \"true\") {",
+							"        postman.setNextRequest(\"Cancel job\");",
+							"    } else {",
+							"        pm.globals.set(\"edge_ingest_poll_count\", 0);",
+							"        postman.setNextRequest(\"Poll file ingestion status\");",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"context\": {\n    \"schemaConnectionId\": \"{{schema_conn_id}}\",\n    \"correlationId\": \"{{edge_ingest_corr_id}}\"\n  },\n  \"pagesCount\": 1,\n  \"isDelta\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/schemaIngestionJobs/{{edge_ingest_job_id}}/finalize",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"schemaIngestionJobs",
+						"{{edge_ingest_job_id}}",
+						"finalize"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel job",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Cancelling job should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(202);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/jobs/{{edge_ingest_job_id}}/cancel",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"jobs",
+						"{{edge_ingest_job_id}}",
+						"cancel"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check ingestion cancellation status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Poll file ingestion cancellation status\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    var state = responseBody.state;",
+							"    pm.expect(state).to.be.oneOf([\"CANCELLED\", \"CANCEL_REQUESTED\"]);",
+							"",
+							"    // do not set next request as this should be the last call for the cancelled flow",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/v1/jobs/{{edge_ingest_job_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"jobs",
+						"{{edge_ingest_job_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Poll file ingestion status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Poll state of edge ingestion job\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    var state = responseBody.state;",
+							"    var jobId = pm.globals.get(\"edge_ingest_job_id\");",
+							"",
+							"    var i = pm.globals.get(\"edge_ingest_poll_count\");",
+							"    if (i <= 30) { // 10 sec x 30 = 5 mins",
+							"        if (state == \"COMPLETED\") {",
+							"            console.log(\"Job '\" + jobId + \"' completed successfully.\");",
+							"            pm.globals.set(\"edge_ingest_poll_count\", 0);",
+							"        } else if (state == \"RUNNING\" || state == \"PENDING\") {",
+							"            console.log(\"Job '\" + jobId + \"' is in active '\" + state + \"' state.\");",
+							"            setTimeout(() => {}, 10000); // wait for 10 seconds",
+							"            pm.globals.set(\"edge_ingest_poll_count\", i++);",
+							"            postman.setNextRequest(pm.info.requestId);",
+							"            return;",
+							"        } else {",
+							"            pm.expect.fail(\"Job '\" + jobId + \"' reached fail state '\" + state + \"'\");",
+							"        }",
+							"    } else {",
+							"        pm.expect.fail(\"Job '\" + jobId + \"' did not reach 'COMPLETED' state in time. Current state is '\" + state + \"'\");",
+							"    }",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{api_url}}/v1/jobs/{{edge_ingest_job_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"jobs",
+						"{{edge_ingest_job_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

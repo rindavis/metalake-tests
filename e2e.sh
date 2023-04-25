@@ -114,6 +114,8 @@ function push_ingest {
   echo "[WARN] 'push-ingest' test stage is not yet supported." || exit 5
 }
 
+# TODO: RDD - create schema connection as opposed to parameter
+# TODO: RDD - refine page body and verify results
 function edge_ingest {
   correlation_id=$(uuidgen | tr '[:upper:]' '[:lower:]')
   echo "[INFO] Starting edge ingestion tests with correlation id '${correlation_id}'."

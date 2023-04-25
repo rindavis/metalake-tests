@@ -80,6 +80,144 @@
 			"response": []
 		},
 		{
+			"name": "Get db connection by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting database connection by id should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    pm.expect(responseBody.name).to.eq(\"catalog_postg\");",
+							"    console.log(\"Found 'catalog_postg' connection with id \" + responseBody.id);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{dgc_url}}/rest/catalogDatabase/v1/databaseConnections/{{db_conn_id}}",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"catalogDatabase",
+						"v1",
+						"databaseConnections",
+						"{{db_conn_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get schema connections by db connection",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting list of schema connections should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var schemas = pm.response.json().results;",
+							"    var schema = null;",
+							"    for (var i = 0; i < schemas.length; i++) {",
+							"        if (schemas[i].name == \"information_schema\") {",
+							"            schema = schemas[i];",
+							"            break;",
+							"        }",
+							"    }",
+							"",
+							"    if (schema == null) {",
+							"        pm.expect.fail(\"Could not find 'information_schema' schema connection.\");",
+							"    }",
+							"    console.log(\"Found 'information_schema' schema connection with id \" + schema.id);",
+							"    pm.globals.set(\"schema_conn_id\", schema.id);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{dgc_url}}/rest/catalogDatabase/v1/schemaConnections?databaseConnectionId={{db_conn_id}}",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"catalogDatabase",
+						"v1",
+						"schemaConnections"
+					],
+					"query": [
+						{
+							"key": "databaseConnectionId",
+							"value": "{{db_conn_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get schema connection by id",
 			"event": [
 				{

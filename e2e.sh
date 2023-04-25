@@ -20,7 +20,7 @@ function usage {
     echo "                           please provide -g aws_id=<aws id> -g aws_secret=<aws key>"
     echo "            push-ingest    run asset ingestion and relation ingestion"
     echo "            edge-ingest    run edge ingestion using a specified edge site"
-    echo "                           please provide -g schema_conn_id=<schema connection id> -g must_cancel=<true if job must be cancelled to complete>"
+    echo "                           please provide -g db_conn_id=<database connection id> -g must_cancel=<true if job must be cancelled to complete>"
     echo "            promote        run promotion for a provider"
     echo "            all            run all above stages consecutively"
     exit 1
@@ -87,7 +87,7 @@ for key_val in "${globals[@]}"; do
   postman_globals+=("--global-var $key_val")
 done
 
-# TODO: RDD - add more checks for mappings, types,
+# TODO: RDD - add more checks for mappings, types
 function provider {
   echo "[INFO] Starting provider tests."
   newman run collections/provider.metalake.postman_collection.json ${postman_globals[@]} \
@@ -114,7 +114,6 @@ function push_ingest {
   echo "[WARN] 'push-ingest' test stage is not yet supported." || exit 5
 }
 
-# TODO: RDD - create schema connection as opposed to parameter
 # TODO: RDD - refine page body and verify results
 function edge_ingest {
   correlation_id=$(uuidgen | tr '[:upper:]' '[:lower:]')

@@ -1,0 +1,296 @@
+{
+	"info": {
+		"_postman_id": "af04e700-d52b-4108-ae46-3a5cdd53dfd9",
+		"name": "asset.metalake",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26935642"
+	},
+	"item": [
+		{
+			"name": "Log in",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Logging in should generate token and cookie\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    pm.expect(responseBody).not.null;",
+							"",
+							"    var token = responseBody.csrfToken;",
+							"    pm.expect(token).not.null;",
+							"    pm.globals.set(\"csrf_token\", token);",
+							"    var cookie = pm.cookies.get('JSESSIONID');",
+							"    pm.expect(cookie).not.null;",
+							"    pm.globals.set(\"auth_cookie\", cookie);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{rw_password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{rw_username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"{{rw_username}}\",\n  \"password\": \"{{rw_password}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dgc_url}}/rest/2.0/auth/sessions",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"2.0",
+						"auth",
+						"sessions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all assets",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting list of assets should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{dgc_url}}/rest/2.0/assets?limit=5",
+					"host": [
+						"{{dgc_url}}"
+					],
+					"path": [
+						"rest",
+						"2.0",
+						"assets"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get asset by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Getting asset by id should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var responseBody = pm.response.json();",
+							"    console.log(\"Fetched asset with id \" + responseBody.id);",
+							"    pm.globals.set(\"asset_name\", responseBody.name);",
+							"    pm.globals.set(\"asset_type\", responseBody.assetType);",
+							"    pm.globals.set(\"asset_provider_id\", responseBody.providerId);",
+							"    console.log(\"Asset has name '\" + responseBody.name + \"' and asset type '\" + responseBody.assetType + \"' for provider id \" + responseBody.providerId);",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/assets/{{asset_id}}",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"assets",
+						"{{asset_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Search for asset should succeed\", function () {",
+							"    postman.setNextRequest(null);",
+							"",
+							"    pm.response.to.have.status(200);",
+							"    var assets = pm.response.json().assets;",
+							"    var asset = null;",
+							"    for (var i = 0; i < assets.length; i++) {",
+							"        if (assets[i].name == pm.globals.get(\"asset_name\")) {",
+							"            asset = assets[i];",
+							"            break;",
+							"        }",
+							"    }",
+							"",
+							"    if(asset == null) {",
+							"        pm.expect.fail(\"Could not find asset.\");",
+							"    }",
+							"    pm.expect(asset.id).to.eq(pm.globals.get(\"asset_id\"))",
+							"    pm.expect(asset.providerId).to.eq(pm.globals.get(\"asset_provider_id\"))",
+							"",
+							"    postman.setNextRequest();",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {},
+				"followRedirects": false,
+				"disableCookies": true,
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "JSESSIONID={{auth_cookie}}",
+						"type": "text"
+					},
+					{
+						"key": "x-csrf-token",
+						"value": "{{csrf_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"providerIds\":[{{asset_provider_id}}],\"assetTypes\":[\"{{asset_type}}\"],\"attributeTypes\":[],\"assetsHaveLineage\":null,\"assetsInCatalog\":null,\"searchTerm\":\"{{asset_name}}\",\"limit\":20,\"offset\":0,\"sortBy\":\"relevance\",\"sortDirection\":\"asc\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_url}}/v1/assets/search",
+					"host": [
+						"{{api_url}}"
+					],
+					"path": [
+						"v1",
+						"assets",
+						"search"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

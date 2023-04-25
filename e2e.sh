@@ -16,6 +16,7 @@ function usage {
     echo "  -s    test stage"
     echo "            provider       run basic 'providers' tests, including mappings"
     echo "            asset          run basic 'assets' tests, including search"
+    echo "                           please provide -g asset_id=<existing asset id>"
     echo "            file-ingest    run file ingestion"
     echo "                           please provide -g aws_id=<aws id> -g aws_secret=<aws key>"
     echo "            push-ingest    run asset ingestion and relation ingestion"
@@ -95,9 +96,13 @@ function provider {
   echo "[INFO] Completed provider tests."
 }
 
-# TODO: RDD - add asset test collection
+# TODO: RDD - create asset automatically instead of requiring input id
+# TODO: RDD - add more checks for attributes
 function asset {
-  echo "[WARN] 'asset' test stage is not yet supported." || exit 3
+  echo "[INFO] Starting asset tests."
+  newman run collections/asset.metalake.postman_collection.json ${postman_globals[@]} \
+  --verbose --reporters cli,json --reporter-json-export reports/asset.json || exit 3
+  echo "[INFO] Completed asset tests."
 }
 
 # TODO: RDD - parameterize test bucket info (?)

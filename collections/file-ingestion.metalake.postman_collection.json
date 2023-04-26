@@ -275,7 +275,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"source\": {\n    \"path\": \"dgc-sr-test/\",\n    \"region\": \"eu-west-1\",\n    \"accessId\": \"{{aws_id}}\",\n    \"secret\": \"{{aws_secret}}\",\n    \"filePattern\": \"big.json\"\n  }\n}",
+					"raw": "{\n  \"source\": {\n    \"path\": \"{{s3_bucket}}/\",\n    \"region\": \"{{s3_region}}\",\n    \"accessId\": \"{{aws_id}}\",\n    \"secret\": \"{{aws_secret}}\",\n    \"filePattern\": \"{{file_ingest_path}}\"\n  }\n}",
 					"options": {
 						"raw": {
 							"language": "json"

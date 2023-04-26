@@ -96,7 +96,7 @@ absolute_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 function provider {
   echo "[INFO] Starting provider tests."
   newman run "$absolute_path/collections/provider.metalake.postman_collection.json" ${postman_globals[@]} \
-  --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/provider.json" || exit 2
+      --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/provider.json" || exit 2
   echo "[INFO] Completed provider tests."
 }
 
@@ -105,7 +105,7 @@ function provider {
 function asset {
   echo "[INFO] Starting asset tests."
   newman run "$absolute_path/collections/asset.metalake.postman_collection.json" ${postman_globals[@]} \
-  --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/asset.json" || exit 3
+      --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/asset.json" || exit 3
   echo "[INFO] Completed asset tests."
 }
 
@@ -113,8 +113,9 @@ function asset {
 # TODO: RDD - add more validation after ingestion completes
 function file_ingest {
   echo "[INFO] Starting file ingestion tests."
-  newman run "$absolute_path/collections/file-ingestion.metalake.postman_collection.json" ${postman_globals[@]} \
-  --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/file-ingest.json" || exit 4
+  newman run "$absolute_path/collections/file-ingestion.metalake.postman_collection.json" \
+	  --global-var "s3_bucket=dgc-sr-test" --global-var "s3_region=eu-west-1" --global-var "file_ingest_path=big.json" ${postman_globals[@]} \
+      --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/file-ingest.json" || exit 4
   echo "[INFO] Completed file ingestion tests."
 }
 
@@ -127,8 +128,9 @@ function push_ingest {
 function edge_ingest {
   correlation_id=$(uuidgen | tr '[:upper:]' '[:lower:]')
   echo "[INFO] Starting edge ingestion tests with correlation id '${correlation_id}'."
-  newman run "$absolute_path/collections/edge-ingestion.metalake.postman_collection.json" --global-var "edge_ingest_corr_id=${correlation_id}" ${postman_globals[@]} \
-  --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/edge-ingest.json" || exit 6
+  newman run "$absolute_path/collections/edge-ingestion.metalake.postman_collection.json" \
+      --global-var "edge_ingest_corr_id=${correlation_id}" --global-var "db_conn_name=catalog_postg" --global-var "schema_conn_name=information_schema" ${postman_globals[@]} \
+      --verbose --reporters cli,json --reporter-json-export "$absolute_path/reports/edge-ingest.json" || exit 6
   echo "[INFO] Completed edge ingestion tests."
 }
 
